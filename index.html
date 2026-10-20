@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kopya — convert documents in your browser</title>
-  <meta name="description" content="Convert PDF to Word, JPG, Excel and EPUB, or Word, PowerPoint and EPUB to PDF. Free, and your files never leave your device.">
+  <title>Kopya — convert files in your browser</title>
+  <meta name="description" content="Convert PDF to Word, JPG, Excel and EPUB, Word, PowerPoint and EPUB to PDF, and convert images (JPG, PNG, WebP, AVIF, HEIC, SVG) and audio (MP3, WAV). Free, and your files never leave your device.">
   <meta name="theme-color" content="#141416">
   <meta name="color-scheme" content="dark">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -13,7 +13,7 @@
 <body>
   <header class="masthead">
     <h1 class="wordmark" aria-label="Kopya"><span class="wm-ink" aria-hidden="true">Kopya</span><span class="wm-copy" aria-hidden="true">Kopya</span></h1>
-    <p class="lede">Convert PDFs, Word files, slides and e-books right in your browser. Your files never leave your device.</p>
+    <p class="lede">Convert PDFs, Word files, slides, e-books, images and audio right in your browser. Your files never leave your device.</p>
   </header>
 
   <main class="app">
@@ -22,6 +22,10 @@
       <div class="tool-list" data-group="from"></div>
       <h2 class="group-title">To PDF</h2>
       <div class="tool-list" data-group="to"></div>
+      <h2 class="group-title">Images</h2>
+      <div class="tool-list" data-group="images"></div>
+      <h2 class="group-title">Audio</h2>
+      <div class="tool-list" data-group="audio"></div>
     </nav>
 
     <section class="work" aria-labelledby="tool-title">
@@ -47,7 +51,7 @@
 
   <footer class="foot">
     <p><strong>Private by design.</strong> Kopya runs entirely on this page. Nothing is uploaded to any server, so it’s safe to use on confidential files.</p>
-    <p>Built with <a href="https://mozilla.github.io/pdf.js/">PDF.js</a>, <a href="https://pdf-lib.js.org/">pdf-lib</a>, <a href="https://docx.js.org/">docx</a>, <a href="https://stuk.github.io/jszip/">JSZip</a> and <a href="https://github.com/bubkoo/html-to-image">html-to-image</a>. <a href="vendor/licenses/THIRD-PARTY-NOTICES.txt">Licenses</a></p>
+    <p>Built with <a href="https://mozilla.github.io/pdf.js/">PDF.js</a>, <a href="https://pdf-lib.js.org/">pdf-lib</a>, <a href="https://docx.js.org/">docx</a>, <a href="https://stuk.github.io/jszip/">JSZip</a>, <a href="https://github.com/bubkoo/html-to-image">html-to-image</a>, <a href="https://github.com/zhuker/lamejs">lamejs</a>, <a href="https://github.com/strukturag/libheif">libheif</a> and <a href="https://github.com/jamsinclair/jSquash">jSquash</a>. <a href="vendor/licenses/THIRD-PARTY-NOTICES.txt">Licenses</a></p>
   </footer>
 
   <noscript><p class="noscript">Kopya needs JavaScript turned on to convert files.</p></noscript>

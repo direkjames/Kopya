@@ -42,6 +42,27 @@ const TOOLS = [
       { key: 'quality', label: 'Quality', choices: [['sharp', 'Sharp'], ['small', 'Smaller file']] },
     ],
   },
+  {
+    id: 'image-convert', kind: 'an image (JPG, PNG, WebP, GIF, BMP, AVIF, SVG or HEIC)', group: 'images', from: 'Image', to: 'Image',
+    title: 'Convert images', dropTitle: 'Choose images',
+    accept: ['.jpg', '.jpeg', '.png', '.webp', '.bmp', '.gif', '.avif', '.svg', '.heic', '.heif'], out: '.jpg',
+    note: 'Converts between JPG, PNG, WebP, BMP and AVIF. Opens GIF, SVG and iPhone HEIC photos too. Transparent areas turn white in JPG and BMP, and animated GIFs keep only their first frame. AVIF files take longer to save.',
+    options: [
+      { key: 'format', label: 'Convert to', default: 'jpg', choices: [['jpg', 'JPG'], ['png', 'PNG'], ['webp', 'WebP'], ['avif', 'AVIF'], ['bmp', 'BMP']] },
+      { key: 'quality', label: 'Quality (JPG, WebP, AVIF)', choices: [['high', 'High'], ['balanced', 'Balanced'], ['small', 'Smaller file']] },
+      { key: 'size', label: 'Longest side', choices: [['0', 'Original'], ['3840', '3840 px'], ['1920', '1920 px'], ['1280', '1280 px']] },
+    ],
+  },
+  {
+    id: 'audio-convert', kind: 'an audio file (WAV, MP3, OGG, M4A or FLAC)', group: 'audio', from: 'Audio', to: 'MP3 / WAV',
+    title: 'Convert audio', dropTitle: 'Choose audio files',
+    accept: ['.wav', '.mp3', '.ogg', '.oga', '.opus', '.m4a', '.aac', '.flac'], out: '.mp3',
+    note: 'Turns WAV, OGG, M4A, AAC and FLAC files into MP3, or any of them (including MP3) into WAV. Audio is saved at 44.1 kHz. Which formats can be opened depends on your browser; Chrome and Edge handle the most.',
+    options: [
+      { key: 'format', label: 'Convert to', choices: [['mp3', 'MP3'], ['wav', 'WAV (lossless)']] },
+      { key: 'bitrate', label: 'MP3 bitrate', default: '192', choices: [['128', '128 kbps'], ['192', '192 kbps'], ['256', '256 kbps'], ['320', '320 kbps (best)']] },
+    ],
+  },
 ];
 
 const $ = (s) => document.querySelector(s);
@@ -52,6 +73,8 @@ const optionValues = {};
 const queue = [];
 let running = false;
 
+const toolName = (t) => t.title || `${t.from} to ${t.to}`;
+
 function fmtTag(text) { return el('span', 'fmt', text); }
 
 function buildToolList() {
@@ -60,7 +83,7 @@ function buildToolList() {
     b.type = 'button';
     b.dataset.id = t.id;
     b.setAttribute('aria-pressed', 'false');
-    b.setAttribute('aria-label', `${t.from} to ${t.to}`);
+    b.setAttribute('aria-label', toolName(t));
     b.append(fmtTag(t.from), el('span', 'arrow', '→'), fmtTag(t.to));
     b.addEventListener('click', () => select(t.id, true));
     document.querySelector(`.tool-list[data-group="${t.group}"]`).appendChild(b);
@@ -75,7 +98,7 @@ function buildOptions(t) {
     const fs = el('fieldset', 'opt');
     fs.appendChild(el('legend', '', o.label));
     const seg = el('div', 'seg');
-    const chosen = optionValues[t.id][o.key] || o.choices[0][0];
+    const chosen = optionValues[t.id][o.key] || o.default || o.choices[0][0];
     optionValues[t.id][o.key] = chosen;
     for (const [value, label] of o.choices) {
       const l = el('label');
@@ -97,14 +120,14 @@ function select(id, fromUser) {
   const t = TOOLS.find((x) => x.id === id) || TOOLS[0];
   current = t;
   for (const b of document.querySelectorAll('.tool')) b.setAttribute('aria-pressed', String(b.dataset.id === t.id));
-  $('#tool-title').textContent = `${t.from} to ${t.to}`;
+  $('#tool-title').textContent = toolName(t);
   $('#tool-note').textContent = t.note;
-  $('#drop-title').textContent = t.from === 'PDF' ? 'Choose PDF files' : `Choose ${t.accept[0]} files`;
+  $('#drop-title').textContent = t.dropTitle || (t.from === 'PDF' ? 'Choose PDF files' : `Choose ${t.accept[0]} files`);
   $('#drop-hint').textContent = 'or drop them here';
   const input = $('#file-input');
   input.accept = t.accept.join(',');
   buildOptions(t);
-  document.title = `${t.from} to ${t.to} — Kopya`;
+  document.title = `${toolName(t)} — Kopya`;
   if (fromUser && location.hash !== `#${t.id}`) history.replaceState(null, '', `#${t.id}`);
 }
 
@@ -146,7 +169,7 @@ function addFiles(files) {
       if (e === '.doc') msg = 'This is the older .doc format. Open it in Word or Google Docs, save it as .docx, then try again.';
       else if (e === '.ppt') msg = 'This is the older .ppt format. Open it in PowerPoint or Google Slides, save it as .pptx, then try again.';
       else if (e === '.pdf') msg += ' For PDFs, pick one of the “From PDF” conversions.';
-      else if (other) msg += ` For this file, use ${other.from} to ${other.to}.`;
+      else if (other) msg += ` For this file, use ${toolName(other)}.`;
       fail(job, msg, other);
       continue;
     }
@@ -161,7 +184,7 @@ function fail(job, message, suggest) {
   bar.remove();
   status.textContent = message;
   if (suggest) {
-    const b = el('button', 'btn btn-quiet', `Switch to ${suggest.from} to ${suggest.to}`);
+    const b = el('button', 'btn btn-quiet', `Switch to ${toolName(suggest)}`);
     b.type = 'button';
     b.addEventListener('click', () => { select(suggest.id, true); li.remove(); addFiles([job.file]); });
     slot.replaceWith(b);

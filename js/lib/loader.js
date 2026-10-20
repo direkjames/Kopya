@@ -26,6 +26,43 @@ export const getJSZip = () => loadScript('jszip.min.js', 'JSZip');
 export const getPDFLib = () => loadScript('pdf-lib.min.js', 'PDFLib');
 export const getHtmlToImage = () => loadScript('html-to-image.js', 'htmlToImage');
 export const getDocx = () => loadScript('docx.min.js', 'docx');
+export const getLame = () => loadScript('lame.min.js', 'lamejs');
+
+// HEIC/HEIF decoder (libheif). Loaded only when someone drops a HEIC photo.
+let heifPromise;
+export function getLibheif() {
+  if (!heifPromise) {
+    heifPromise = Promise.all([
+      loadScript('heif/libheif.js', 'libheif'),
+      fetch(`${base}heif/libheif.wasm`).then((r) => {
+        if (!r.ok) throw new Error('Couldn’t load the HEIC decoder. Check your connection and try again.');
+        return r.arrayBuffer();
+      }),
+    ]).then(([factory, wasmBinary]) => factory({ wasmBinary }))
+      .catch((e) => { heifPromise = null; throw e; });
+  }
+  return heifPromise;
+}
+
+// AVIF encoder, run in its own worker. Resolves with the encoded bytes.
+export function encodeAvif(rgba, width, height, options) {
+  return new Promise((resolve, reject) => {
+    let worker;
+    try {
+      worker = new Worker(base + 'avif/worker.js', { type: 'module' });
+    } catch {
+      reject(new Error('This browser can’t run the AVIF encoder. Try a recent Chrome, Edge, Firefox or Safari.'));
+      return;
+    }
+    const done = (fn, value) => { worker.terminate(); fn(value); };
+    worker.onmessage = (e) => {
+      if (e.data.ok) done(resolve, e.data.bytes);
+      else done(reject, new Error(`AVIF encoding failed: ${e.data.message}`));
+    };
+    worker.onerror = () => done(reject, new Error('The AVIF encoder couldn’t start. Check your connection and try again.'));
+    worker.postMessage({ buffer: rgba.buffer, width, height, options }, [rgba.buffer]);
+  });
+}
 
 let pdfjsPromise;
 export function getPdfjs() {
